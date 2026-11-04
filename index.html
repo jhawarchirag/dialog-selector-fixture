@@ -15,8 +15,8 @@
   <h1>Cart</h1>
   <button id="checkout" data-test-id="checkout-button">Checkout</button>
   <p id="done" hidden>Order complete</p>
-  <!-- Keeps `.preflight` non-unique so the recorder falls back to a positional css path. -->
-  <div class="preflight" hidden></div>
+  <!-- Decoy: makes `dialog` / `.preflight` non-unique so the recorder falls back to a positional css path. -->
+  <dialog class="preflight"></dialog>
 </div>
 <script>
   // Mirrors LTAR-449: dialog id regenerated per render, portaled under <body> at a varying index.
