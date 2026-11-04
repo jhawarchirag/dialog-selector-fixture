@@ -22,21 +22,23 @@
   // Mirrors LTAR-449: dialog id regenerated per render, portaled under <body> at a varying index.
   const randomId = () => 'modal-' + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
 
+  // Portaled nodes carry no class or id, so the recorder can only locate the wrapper by position.
+  let portaled = [];
+
   function addNoiseDivs() {
     const count = Math.floor(Math.random() * 5) + 1;
     for (let i = 0; i < count; i++) {
-      const div = document.createElement('div');
-      div.className = 'portal-noise';
-      document.body.appendChild(div);
+      portaled.push(document.body.appendChild(document.createElement('div')));
     }
   }
 
   function openDialog() {
-    document.querySelectorAll('.portal-noise, .portal-root').forEach((el) => el.remove());
+    portaled.forEach((el) => el.remove());
+    portaled = [];
     addNoiseDivs();
 
     const wrapper = document.createElement('div');
-    wrapper.className = 'portal-root';
+    portaled.push(wrapper);
     wrapper.innerHTML = `
       <dialog id="${randomId()}" class="preflight" aria-label="Summary of your purchase dialog">
         <h2>Tickets Summary</h2>
