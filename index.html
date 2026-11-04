@@ -15,6 +15,8 @@
   <h1>Cart</h1>
   <button id="checkout" data-test-id="checkout-button">Checkout</button>
   <p id="done" hidden>Order complete</p>
+  <!-- Keeps `.preflight` non-unique so the recorder falls back to a positional css path. -->
+  <div class="preflight" hidden></div>
 </div>
 <script>
   // Mirrors LTAR-449: dialog id regenerated per render, portaled under <body> at a varying index.
@@ -36,7 +38,7 @@
     const wrapper = document.createElement('div');
     wrapper.className = 'portal-root';
     wrapper.innerHTML = `
-      <dialog id="${randomId()}" class="preflight wc-shoppingcart-checkout" aria-label="Summary of your purchase dialog">
+      <dialog id="${randomId()}" class="preflight" aria-label="Summary of your purchase dialog">
         <h2>Tickets Summary</h2>
         <p>1 ticket, $2.00</p>
         <button data-test-id="wc-checkout-complete-button">Complete</button>
