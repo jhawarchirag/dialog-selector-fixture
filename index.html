@@ -8,6 +8,12 @@
   body { font-family: sans-serif; margin: 24px; }
   dialog { padding: 24px; border: 1px solid #888; }
   dialog::backdrop { background: rgba(0, 0, 0, .4); }
+  section { margin-top: 32px; }
+  .menu { display: inline-block; position: relative; }
+  .menu-items { display: none; position: absolute; background: #fff; border: 1px solid #888; padding: 8px; }
+  .menu:hover .menu-items { display: block; }
+  .zone { display: inline-block; width: 160px; height: 80px; border: 2px dashed #888; margin-right: 16px; vertical-align: top; }
+  #card { width: 120px; padding: 8px; background: #def; cursor: grab; }
 </style>
 </head>
 <body>
@@ -18,6 +24,33 @@
   <!-- Decoy: makes `dialog` / `.preflight` non-unique so the recorder falls back to a positional css path. -->
   <dialog class="preflight"></dialog>
 </div>
+
+<section id="hover-section">
+  <h2>Hover menu</h2>
+  <div class="menu" data-test-id="account-menu">
+    <button id="account">Account</button>
+    <div class="menu-items">
+      <a href="#orders" id="orders-link" data-test-id="orders-link">Orders</a>
+    </div>
+  </div>
+  <p id="orders" hidden>Orders opened</p>
+</section>
+
+<section id="drag-section">
+  <h2>Drag and drop</h2>
+  <div class="zone" id="source-zone"><div id="card" draggable="true" data-test-id="drag-card">Drag me</div></div>
+  <div class="zone" id="target-zone" data-test-id="drop-zone"></div>
+  <p id="dropped" hidden>Card dropped</p>
+</section>
+
+<section id="tab-section">
+  <h2>Tabs</h2>
+  <!-- Popup closes itself via window.close(); the recorder should not record a close-tab step for it. -->
+  <button id="open-self-closing" data-test-id="open-self-closing-tab">Open self-closing tab</button>
+  <!-- Plain new tab the user closes by hand; this close is a real user step. -->
+  <a href="popup.html?stay=1" target="_blank" id="open-tab" data-test-id="open-tab-link">Open tab (close it yourself)</a>
+</section>
+
 <script>
   // Mirrors LTAR-449: dialog id regenerated per render, portaled under <body> at a varying index.
   const randomId = () => 'modal-' + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
@@ -57,6 +90,24 @@
   }
 
   document.getElementById('checkout').addEventListener('click', openDialog);
+
+  document.getElementById('orders-link').addEventListener('click', () => {
+    document.getElementById('orders').hidden = false;
+  });
+
+  const card = document.getElementById('card');
+  const target = document.getElementById('target-zone');
+  card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', card.id));
+  target.addEventListener('dragover', (e) => e.preventDefault());
+  target.addEventListener('drop', (e) => {
+    e.preventDefault();
+    target.appendChild(card);
+    document.getElementById('dropped').hidden = false;
+  });
+
+  document.getElementById('open-self-closing').addEventListener('click', () => {
+    window.open('popup.html', '_blank');
+  });
 </script>
 </body>
 </html>
