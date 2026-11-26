@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Vault Widget</title>
+<style>
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #1c2b4a; }
+  form { border: 1px solid #e3e6ee; border-radius: 8px; padding: 16px; }
+  label { display: flex; align-items: center; gap: 12px; }
+  input { width: 110px; padding: 10px; border: 1px solid #9aa3b8; border-radius: 6px; font-size: 16px; }
+  button { margin-top: 16px; border: 0; background: #1c2b4a; color: #fff; border-radius: 999px; padding: 10px 32px; font-weight: 700; cursor: pointer; }
+  #status { min-height: 18px; font-size: 13px; color: #b3261e; }
+</style>
+</head>
+<body>
+<form id="cvv-form">
+  <div>Test card ending 0000</div>
+  <p><label>CVV <input data-test-id="cvv-input" inputmode="numeric" maxlength="4" placeholder="CVV" aria-label="CVV"></label></p>
+  <div id="status" role="alert"></div>
+  <button type="submit" data-test-id="cvv-confirm-button"><div><div>✓</div><div>Confirm</div></div></button>
+</form>
+<script src="fixture.js"></script>
+<script>
+  // Runs in an opaque origin; reports to the host page only via postMessage.
+  const notify = (event, detail) => fixtureNotify({ event, detail });
+  const input = document.querySelector('[data-test-id="cvv-input"]');
+  input.addEventListener('click', () => notify('cvv clicked'));
+  input.addEventListener('input', () => notify('cvv typed', input.value.length + ' digits'));
+  document.getElementById('cvv-form').addEventListener('submit', (e) => {
+    e.preventDefault();
+    if (!/^\d{3,4}$/.test(input.value)) {
+      document.getElementById('status').textContent = 'Enter a 3 or 4 digit CVV';
+      notify('confirm rejected', 'invalid CVV');
+      return;
+    }
+    notify('confirmed');
+  });
+</script>
+</body>
+</html>

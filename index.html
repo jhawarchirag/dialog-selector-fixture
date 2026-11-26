@@ -3,110 +3,143 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Checkout Fixture</title>
+<title>Add Funds Fixture</title>
 <style>
-  body { font-family: sans-serif; margin: 24px; }
-  dialog { padding: 24px; border: 1px solid #888; }
-  dialog::backdrop { background: rgba(0, 0, 0, .4); }
-  section { margin-top: 32px; }
-  .menu { display: inline-block; position: relative; }
-  .menu-items { display: none; position: absolute; background: #fff; border: 1px solid #888; padding: 8px; }
-  .menu:hover .menu-items { display: block; }
-  .zone { display: inline-block; width: 160px; height: 80px; border: 2px dashed #888; margin-right: 16px; vertical-align: top; }
-  #card { width: 120px; padding: 8px; background: #def; cursor: grab; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #1c2b4a; background: #f6f7fb; }
+  header { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 12px 24px; background: #fff; border-bottom: 1px solid #e3e6ee; flex-wrap: wrap; }
+  .brand { font-weight: 800; font-size: 20px; color: #1c2b4a; }
+  .account { display: flex; align-items: center; gap: 12px; border: 1px solid #e3e6ee; border-radius: 8px; padding: 6px 12px; }
+  .balance small { display: block; font-size: 11px; text-transform: uppercase; color: #6b7590; }
+  .balance strong { font-size: 16px; }
+  main { display: grid; grid-template-columns: 240px 1fr; gap: 24px; padding: 24px; max-width: 1200px; margin: 0 auto; }
+  nav.side { background: #fff; border: 1px solid #e3e6ee; border-radius: 8px; padding: 16px; }
+  nav.side h4 { margin: 16px 0 8px; font-size: 12px; letter-spacing: .08em; color: #6b7590; }
+  nav.side a { display: block; padding: 6px 0; color: #1c2b4a; text-decoration: none; font-weight: 600; }
+  .crumbs { font-size: 14px; color: #6b7590; }
+  .card { background: #fff; border: 1px solid #e3e6ee; border-radius: 8px; display: grid; grid-template-columns: 1fr 1fr; }
+  .card > section { padding: 24px; }
+  .card > section + section { border-left: 1px solid #e3e6ee; }
+  .pay-option { border: 1px solid #e3e6ee; border-radius: 6px; padding: 14px; margin-bottom: 12px; }
+  .pay-option.selected { border-color: #1c2b4a; }
+  .amounts { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 16px; }
+  .pill { border: 2px solid #1c2b4a; background: #fff; color: #1c2b4a; border-radius: 999px; padding: 10px 24px; font-weight: 700; cursor: pointer; }
+  .pill[aria-pressed="true"] { background: #1c2b4a; color: #fff; }
+  .primary { border: 0; background: #1c2b4a; color: #fff; border-radius: 999px; padding: 12px 40px; font-weight: 700; cursor: pointer; }
+  dialog { border: 0; border-radius: 10px; padding: 28px; width: min(480px, 92vw); }
+  dialog::backdrop { background: rgba(28, 43, 74, .55); }
+  .close-x { float: right; border: 0; background: none; font-size: 22px; cursor: pointer; }
+  .banner { background: #fff4ce; color: #5c4400; text-align: center; padding: 8px 16px; font-size: 14px; }
+  #log { margin-top: 24px; font: 12px/1.5 ui-monospace, Menlo, monospace; background: #fff; border: 1px solid #e3e6ee; border-radius: 8px; padding: 12px; min-height: 60px; }
+  @media (max-width: 760px) {
+    main { grid-template-columns: 1fr; padding: 16px; }
+    .card { grid-template-columns: 1fr; }
+    .card > section + section { border-left: 0; border-top: 1px solid #e3e6ee; }
+  }
 </style>
 </head>
 <body>
-<div id="app">
-  <h1>Cart</h1>
-  <button id="checkout" data-test-id="checkout-button">Checkout</button>
-  <p id="done" hidden>Order complete</p>
-  <!-- Decoy: makes `dialog` / `.preflight` non-unique so the recorder falls back to a positional css path. -->
-  <dialog class="preflight"></dialog>
-</div>
-
-<section id="hover-section">
-  <h2>Hover menu</h2>
-  <div class="menu" data-test-id="account-menu">
-    <button id="account">Account</button>
-    <div class="menu-items">
-      <a href="#orders" id="orders-link" data-test-id="orders-link">Orders</a>
-    </div>
+<div class="banner" role="note">Test fixture. Nothing is sent or stored.</div>
+<header>
+  <div class="brand">SELECTOR FIXTURE</div>
+  <div class="account">
+    <div class="balance"><small>Balance</small><strong id="balance">$1,000,039.00</strong></div>
+    <span data-test-id="account-name">Test User</span>
   </div>
-  <p id="orders" hidden>Orders opened</p>
-</section>
+</header>
 
-<section id="drag-section">
-  <h2>Drag and drop</h2>
-  <div class="zone" id="source-zone"><div id="card" draggable="true" data-test-id="drag-card">Drag me</div></div>
-  <div class="zone" id="target-zone" data-test-id="drop-zone"></div>
-  <p id="dropped" hidden>Card dropped</p>
-</section>
+<main id="main">
+  <nav class="side">
+    <a href="#">My Account</a>
+    <h4>WALLET</h4>
+    <a href="#">Add Funds</a>
+    <a href="#">Withdraw Wins</a>
+    <a href="cases.html">Other selector cases →</a>
+  </nav>
 
-<section id="tab-section">
-  <h2>Tabs</h2>
-  <!-- Popup closes itself via window.close(); the recorder should not record a close-tab step for it. -->
-  <button id="open-self-closing" data-test-id="open-self-closing-tab">Open self-closing tab</button>
-  <!-- Plain new tab the user closes by hand; this close is a real user step. -->
-  <a href="popup.html?stay=1" target="_blank" id="open-tab" data-test-id="open-tab-link">Open tab (close it yourself)</a>
-</section>
+  <div>
+    <p class="crumbs">My Account › Add Funds</p>
+    <h1>Add Funds</h1>
+    <div class="card" id="i-lottery-add-funds">
+      <section>
+        <h3>Your Payment Options</h3>
+        <div class="pay-option selected">Test card ending 0000</div>
+        <div class="pay-option">Test bank account</div>
+      </section>
+      <section>
+        <h3>Add Funds</h3>
+        <div class="amounts">
+          <button class="pill" aria-pressed="false" data-amount="25">$25</button>
+          <button class="pill" aria-pressed="true" data-amount="40">$40</button>
+          <button class="pill" aria-pressed="false" data-amount="50">$50</button>
+        </div>
+        <button class="primary" data-test-id="pay-add-button"><div><div>+</div><div id="add-label">Add $40</div></div></button>
+      </section>
+    </div>
+    <div id="log" aria-live="polite"></div>
+  </div>
+</main>
 
+<!-- CVV dialog: the input and Confirm live in an isolated iframe inside the shadow root of <vault-iframe>.
+     is-cvv-widget is the attribute the recorded override selects on. Buttons wrap their label in divs
+     because recorded XPaths (//button[...]//div/div[2]) target that structure. -->
+<dialog id="cvv-dialog">
+  <button class="close-x" aria-label="Close" data-test-id="cvv-dialog-close">×</button>
+  <h2 style="text-align:center">Add CVV</h2>
+  <p class="banner" role="note">Test fixture. Nothing is sent or stored.</p>
+  <vault-iframe is-cvv-widget></vault-iframe>
+  <p style="text-align:center">Adding Funds: <span id="adding-amount">$40.00</span></p>
+</dialog>
+
+<dialog id="confirmation-dialog">
+  <h2>Funds added</h2>
+  <p id="confirmation-text"></p>
+  <button class="primary" data-test-id="confirmation-close-button"><div><div>▶</div><div>Let's Play</div></div></button>
+</dialog>
+
+<script src="fixture.js"></script>
 <script>
-  // Mirrors LTAR-449: dialog id regenerated per render, portaled under <body> at a varying index.
-  const randomId = () => 'modal-' + Math.random().toString(36).slice(2, 12) + Math.random().toString(36).slice(2, 12);
+  let amount = 40;
+  const log = fixtureLog;
 
-  // Portaled nodes carry no class or id, so the recorder can only locate the wrapper by position.
-  let portaled = [];
-
-  function addNoiseDivs() {
-    const count = Math.floor(Math.random() * 5) + 1;
-    for (let i = 0; i < count; i++) {
-      portaled.push(document.body.appendChild(document.createElement('div')));
+  // Payment widget: open shadow root holding an iframe. The iframe is sandboxed without
+  // allow-same-origin, so it runs in an opaque origin and the page cannot read into it (cross-origin).
+  customElements.define('vault-iframe', class extends HTMLElement {
+    constructor() {
+      super();
+      const root = this.attachShadow({ mode: 'open' });
+      root.innerHTML = '<div><iframe title="Iframe Widget" src="vault-frame.html" sandbox="allow-scripts allow-forms" style="width:100%;height:200px;border:0"></iframe></div>';
     }
-  }
-
-  function openDialog() {
-    portaled.forEach((el) => el.remove());
-    portaled = [];
-    addNoiseDivs();
-
-    const wrapper = document.createElement('div');
-    portaled.push(wrapper);
-    wrapper.innerHTML = `
-      <dialog id="${randomId()}" class="preflight" aria-label="Summary of your purchase dialog">
-        <h2>Tickets Summary</h2>
-        <p>1 ticket, $2.00</p>
-        <button data-test-id="wc-checkout-complete-button">Complete</button>
-      </dialog>`;
-    document.body.appendChild(wrapper);
-
-    const dialog = wrapper.querySelector('dialog');
-    dialog.querySelector('button').addEventListener('click', () => {
-      dialog.close();
-      wrapper.remove();
-      document.getElementById('done').hidden = false;
-    });
-    dialog.showModal();
-  }
-
-  document.getElementById('checkout').addEventListener('click', openDialog);
-
-  document.getElementById('orders-link').addEventListener('click', () => {
-    document.getElementById('orders').hidden = false;
   });
 
-  const card = document.getElementById('card');
-  const target = document.getElementById('target-zone');
-  card.addEventListener('dragstart', (e) => e.dataTransfer.setData('text/plain', card.id));
-  target.addEventListener('dragover', (e) => e.preventDefault());
-  target.addEventListener('drop', (e) => {
-    e.preventDefault();
-    target.appendChild(card);
-    document.getElementById('dropped').hidden = false;
+  document.querySelectorAll('.pill').forEach((pill) => pill.addEventListener('click', () => {
+    document.querySelectorAll('.pill').forEach((p) => p.setAttribute('aria-pressed', 'false'));
+    pill.setAttribute('aria-pressed', 'true');
+    amount = Number(pill.dataset.amount);
+    document.getElementById('add-label').textContent = 'Add $' + amount;
+    log('amount selected: $' + amount);
+  }));
+
+  document.querySelector('[data-test-id="pay-add-button"]').addEventListener('click', () => {
+    document.getElementById('adding-amount').textContent = '$' + amount.toFixed(2);
+    document.getElementById('cvv-dialog').showModal();
+    log('CVV dialog opened');
+  });
+  document.querySelector('[data-test-id="cvv-dialog-close"]').addEventListener('click', () => document.getElementById('cvv-dialog').close());
+
+  const vaultFrame = () => document.querySelector('vault-iframe').shadowRoot.querySelector('iframe');
+  onFrameMessage(() => [vaultFrame()], (data) => {
+    log('vault widget: ' + data.event + (data.detail ? ' (' + data.detail + ')' : ''));
+    if (data.event === 'confirmed') {
+      document.getElementById('cvv-dialog').close();
+      document.getElementById('confirmation-text').textContent = '$' + amount.toFixed(2) + ' added to your balance.';
+      document.getElementById('confirmation-dialog').showModal();
+    }
   });
 
-  document.getElementById('open-self-closing').addEventListener('click', () => {
-    window.open('popup.html', '_blank');
+  document.querySelector('[data-test-id="confirmation-close-button"]').addEventListener('click', () => {
+    document.getElementById('confirmation-dialog').close();
+    log("Let's Play clicked: flow complete");
   });
 </script>
 </body>

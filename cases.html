@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Selector Cases</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; padding: 16px; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #1c2b4a; background: #f6f7fb; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(300px, 100%), 1fr)); gap: 16px; }
+  .case { background: #fff; border: 1px solid #e3e6ee; border-radius: 8px; padding: 16px; }
+  .case h3 { margin: 0 0 4px; font-size: 16px; }
+  .case p.hint { margin: 0 0 12px; font-size: 13px; color: #6b7590; }
+  .status { display: inline-block; margin-left: 8px; font-size: 13px; color: #1b7f3b; }
+  iframe { width: 100%; height: 90px; border: 1px dashed #9aa3b8; border-radius: 6px; }
+  code { font-size: 12px; }
+  #log { margin-top: 24px; font: 12px/1.5 ui-monospace, Menlo, monospace; background: #fff; border: 1px solid #e3e6ee; border-radius: 8px; padding: 12px; min-height: 60px; }
+</style>
+</head>
+<body>
+<p role="note" style="background:#fff4ce;padding:8px;text-align:center">Test fixture. Nothing is sent or stored.</p>
+<p><a href="index.html">← Add Funds flow</a></p>
+<h1>Selector cases</h1>
+<p>Each case reports below when its target is clicked or typed into. Iframes are sandboxed without <code>allow-same-origin</code>, so they behave as cross-origin.</p>
+
+<div class="grid">
+  <div class="case" id="case-normal">
+    <h3>1. Normal element</h3>
+    <p class="hint"><code>button[data-test-id="normal-btn"]</code></p>
+    <button data-test-id="normal-btn">Click me</button><span class="status"></span>
+  </div>
+
+  <div class="case" id="case-iframe">
+    <h3>2. Element in a cross-origin iframe</h3>
+    <p class="hint"><code>iframe#plain-frame &lt;&lt; button[data-test-id="frame-btn"]</code></p>
+    <iframe id="plain-frame" title="Plain Frame" src="frame.html?case=iframe" sandbox="allow-scripts"></iframe>
+  </div>
+
+  <div class="case" id="case-shadow">
+    <h3>3. Element in a shadow root</h3>
+    <p class="hint"><code>shadow-host#sh || button[data-test-id="shadow-btn"]</code></p>
+    <shadow-host id="sh"></shadow-host>
+  </div>
+
+  <div class="case" id="case-nested-shadow">
+    <h3>4. Nested shadow roots</h3>
+    <p class="hint"><code>outer-host#outer || inner-host || button[data-test-id="nested-btn"]</code></p>
+    <outer-host id="outer"></outer-host>
+  </div>
+
+  <div class="case" id="case-shadow-iframe">
+    <h3>5. Iframe inside a shadow root</h3>
+    <p class="hint"><code>widget-host#widget || iframe[title="Widget Frame"] &lt;&lt; button[data-test-id="frame-btn"]</code></p>
+    <widget-host id="widget"></widget-host>
+  </div>
+
+  <div class="case" id="case-iframe-shadow">
+    <h3>6. Shadow root inside an iframe</h3>
+    <p class="hint"><code>iframe#shadow-frame &lt;&lt; frame-host || button[data-test-id="frame-btn"]</code></p>
+    <iframe id="shadow-frame" title="Shadow Frame" src="frame.html?case=iframe-shadow&amp;shadow=1" sandbox="allow-scripts"></iframe>
+  </div>
+
+  <div class="case" id="case-shadow-input">
+    <h3>7. Text input in a shadow root</h3>
+    <p class="hint"><code>input-host#ih || input[data-test-id="shadow-input"]</code></p>
+    <input-host id="ih"></input-host>
+  </div>
+</div>
+
+<div id="log" aria-live="polite"></div>
+
+<script src="fixture.js"></script>
+<script>
+  const log = fixtureLog;
+  const mark = (caseId, text) => {
+    const status = document.querySelector('#' + caseId + ' .status');
+    if (status) status.textContent = '✓ ' + text;
+    log(caseId + ': ' + text);
+  };
+
+  document.querySelector('[data-test-id="normal-btn"]').addEventListener('click', () => mark('case-normal', 'clicked'));
+
+  // Each host renders its content into an open shadow root and logs its target's activity.
+  const defineHost = (tag, html, wire) => customElements.define(tag, class extends HTMLElement {
+    constructor() {
+      super();
+      const root = this.attachShadow({ mode: 'open' });
+      root.innerHTML = html;
+      wire(root);
+    }
+  });
+
+  defineHost('shadow-host', '<button data-test-id="shadow-btn">Click me</button><span class="status" style="color:#1b7f3b"></span>',
+    (root) => root.querySelector('button').addEventListener('click', () => {
+      root.querySelector('.status').textContent = ' ✓ clicked';
+      log('case-shadow: clicked');
+    }));
+
+  defineHost('inner-host', '<button data-test-id="nested-btn">Click me</button>',
+    (root) => root.querySelector('button').addEventListener('click', () => log('case-nested-shadow: clicked')));
+  defineHost('outer-host', '<div><inner-host></inner-host></div>', () => {});
+
+  defineHost('widget-host', '<div><iframe title="Widget Frame" src="frame.html?case=shadow-iframe" sandbox="allow-scripts" style="width:100%;height:90px;border:1px dashed #9aa3b8;border-radius:6px"></iframe></div>', () => {});
+
+  defineHost('input-host', '<input data-test-id="shadow-input" placeholder="Type here">',
+    (root) => root.querySelector('input').addEventListener('input', (e) => log('case-shadow-input: typed "' + e.target.value + '"')));
+
+  const caseFrames = () => [
+    document.getElementById('plain-frame'),
+    document.getElementById('shadow-frame'),
+    document.querySelector('widget-host#widget').shadowRoot.querySelector('iframe'),
+  ];
+  onFrameMessage(caseFrames, (data) => {
+    const caseId = 'case-' + data.case;
+    if (document.getElementById(caseId)) log(caseId + ': ' + data.event);
+  });
+</script>
+</body>
+</html>

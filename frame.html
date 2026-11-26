@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Case Frame</title>
+<style>
+  body { margin: 8px; font-family: -apple-system, "Segoe UI", Roboto, sans-serif; color: #1c2b4a; }
+</style>
+</head>
+<body>
+<span id="target"></span>
+<script src="fixture.js"></script>
+<script>
+  // ?case=<id> names the case to report; ?shadow=1 puts the button inside a shadow root.
+  const params = new URLSearchParams(location.search);
+  const caseName = params.get('case') || 'unknown';
+  const notify = (event) => fixtureNotify({ case: caseName, event });
+
+  const button = document.createElement('button');
+  button.dataset.testId = 'frame-btn';
+  button.textContent = 'Click me (in iframe)';
+  button.addEventListener('click', () => { button.textContent = '✓ clicked'; notify('clicked'); });
+
+  if (params.get('shadow') === '1') {
+    customElements.define('frame-host', class extends HTMLElement {
+      constructor() { super(); this.attachShadow({ mode: 'open' }).appendChild(button); }
+    });
+    document.getElementById('target').appendChild(document.createElement('frame-host'));
+  } else {
+    document.getElementById('target').appendChild(button);
+  }
+</script>
+</body>
+</html>
